@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':eveyshowing', ':everyshowing'
 rootProject.name='everyshow'
