@@ -1,0 +1,2 @@
+include ':app', ':everyshowing'
+rootProject.name='everyshow'
