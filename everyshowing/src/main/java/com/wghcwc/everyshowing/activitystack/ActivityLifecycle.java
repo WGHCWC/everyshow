@@ -103,6 +103,12 @@ public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks
     @Override
     public void onActivityDestroyed(Activity activity) {
         ActivityStack.removeActivity(activity);
+        LinkedList<ActivityChangeListener> linkedList = activityLinked.get(activity);
+        if (linkedList == null) return;
+        for (ActivityChangeListener changeListener : linkedList) {
+            changeListener.onActivitySateChange(activity, ActivityState.DESTROYED);
+            changeListener.onActivityDestroy(activity);
+        }
         remove(activity);
     }
 }

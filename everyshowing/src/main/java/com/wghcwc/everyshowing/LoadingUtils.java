@@ -213,10 +213,6 @@ public class LoadingUtils {
             wrapperMap.remove(activity);
         }
 
-        @Override
-        public void onActivityCreate(Activity activity) {
-
-        }
 
         @Override
         public void onActivitySateChange(Activity activity, ActivityState state) {

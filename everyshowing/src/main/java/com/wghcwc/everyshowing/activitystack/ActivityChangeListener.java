@@ -19,13 +19,6 @@ public interface ActivityChangeListener {
      */
     void onActivityDestroy(Activity activity) ;
 
-    /**
-     * 当前Activity 创建
-     *
-     * @param activity
-     */
-    void onActivityCreate(Activity activity);
-
     void onActivitySateChange(Activity activity, ActivityState state);
 
 }
