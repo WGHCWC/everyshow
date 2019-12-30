@@ -162,7 +162,7 @@ public class LoadingUtils {
 
                         @Override
                         protected void onSuccess(Long aLong) {
-                            svProgressHUD.show();
+                            svProgressHUD.showWithStatus("加载中...");
                         }
 
 
