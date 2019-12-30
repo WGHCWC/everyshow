@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -31,8 +32,9 @@ public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks
         changeListeners.add(listener);
     }
 
-    public void remove(ActivityChangeListener listener) {
+    public boolean remove(ActivityChangeListener listener) {
         changeListeners.remove(listener);
+        return true;
     }
 
 
@@ -44,7 +46,6 @@ public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks
             changeListener.onActivityCreate(activity);
             changeListener.onActivitySateChange(activity, ActivityState.CREATED);
         }
-
     }
 
     @Override
@@ -83,9 +84,14 @@ public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks
     @Override
     public void onActivityDestroyed(Activity activity) {
         ActivityStack.removeActivity(activity);
-        for (ActivityChangeListener changeListener : changeListeners) {
-            changeListener.onActivityDestroy(activity);
+        Iterator<ActivityChangeListener> iterator = changeListeners.iterator();
+        while (iterator.hasNext()) {
+            ActivityChangeListener changeListener = iterator.next();
             changeListener.onActivitySateChange(activity, ActivityState.DESTROYED);
+            boolean needRemove = changeListener.onActivityDestroy(activity);
+            if (needRemove) {
+                iterator.remove();
+            }
         }
     }
 }

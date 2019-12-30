@@ -208,9 +208,9 @@ public class LoadingUtils {
         }
 
         @Override
-        public void onActivityDestroy(Activity activity) {
-            ActivityLifecycle.getInstance().remove(this);
+        public boolean onActivityDestroy(Activity activity) {
             wrapperMap.remove(activity);
+           return true;
         }
 
         @Override
