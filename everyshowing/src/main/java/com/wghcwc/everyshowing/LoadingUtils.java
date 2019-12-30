@@ -24,6 +24,7 @@ import io.reactivex.schedulers.Schedulers;
 public class LoadingUtils {
     private static volatile LoadingUtils loadingUtils = new LoadingUtils();
     private static Map<Activity, LoadWrapper> wrapperMap;
+
     private LoadingUtils() {
         wrapperMap = new WeakHashMap<>();
     }
@@ -125,7 +126,7 @@ public class LoadingUtils {
         private int count;
 
         private LoadWrapper(Activity activity) {
-            ActivityLifecycle.getInstance().add(this);
+            ActivityLifecycle.getInstance().add(activity, this);
             svProgressHUD = new SVProgressHUD(activity);
         }
 
@@ -208,9 +209,8 @@ public class LoadingUtils {
         }
 
         @Override
-        public boolean onActivityDestroy(Activity activity) {
+        public void onActivityDestroy(Activity activity) {
             wrapperMap.remove(activity);
-           return true;
         }
 
         @Override

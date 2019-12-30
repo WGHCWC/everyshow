@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.WeakHashMap;
 
 /**
  * @author wghcwc
@@ -14,64 +15,82 @@ import java.util.LinkedList;
 public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks {
     public static ActivityLifecycle instance;
 
+    private final WeakHashMap<Activity, LinkedList<ActivityChangeListener>> activityLinked;
+
     static {
         instance = new ActivityLifecycle();
     }
 
     private ActivityLifecycle() {
-        changeListeners = new LinkedList<>();
+        activityLinked = new WeakHashMap<>();
     }
 
     public static ActivityLifecycle getInstance() {
         return instance;
     }
 
-    private final LinkedList<ActivityChangeListener> changeListeners;
+    public void add(Activity activity, ActivityChangeListener listener) {
+        LinkedList<ActivityChangeListener> linkedList = activityLinked.get(activity);
+        if (linkedList == null) {
+            linkedList = new LinkedList<>();
+        }
+        linkedList.push(listener);
+        activityLinked.put(activity, linkedList);
 
-    public void add(ActivityChangeListener listener) {
-        changeListeners.add(listener);
     }
 
-    public boolean remove(ActivityChangeListener listener) {
-        changeListeners.remove(listener);
-        return true;
+    public void remove(Activity activity, ActivityChangeListener listener) {
+        LinkedList<ActivityChangeListener> linkedList = activityLinked.get(activity);
+        if (linkedList != null) {
+            linkedList.remove(listener);
+            if (linkedList.size() == 0) {
+                activityLinked.remove(activity);
+            }
+        }
     }
 
+    public void remove(Activity activity) {
+        activityLinked.remove(activity);
+
+    }
 
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-
         ActivityStack.pushActivity(activity);
-        for (ActivityChangeListener changeListener : changeListeners) {
-            changeListener.onActivityCreate(activity);
-            changeListener.onActivitySateChange(activity, ActivityState.CREATED);
-        }
     }
 
     @Override
     public void onActivityStarted(Activity activity) {
-        for (ActivityChangeListener changeListener : changeListeners) {
+        LinkedList<ActivityChangeListener> linkedList = activityLinked.get(activity);
+        if (linkedList == null) return;
+        for (ActivityChangeListener changeListener : linkedList) {
             changeListener.onActivitySateChange(activity, ActivityState.STARTED);
         }
     }
 
     @Override
     public void onActivityResumed(Activity activity) {
-        for (ActivityChangeListener changeListener : changeListeners) {
+        LinkedList<ActivityChangeListener> linkedList = activityLinked.get(activity);
+        if (linkedList == null) return;
+        for (ActivityChangeListener changeListener : linkedList) {
             changeListener.onActivitySateChange(activity, ActivityState.RESUMED);
         }
     }
 
     @Override
     public void onActivityPaused(Activity activity) {
-        for (ActivityChangeListener changeListener : changeListeners) {
+        LinkedList<ActivityChangeListener> linkedList = activityLinked.get(activity);
+        if (linkedList == null) return;
+        for (ActivityChangeListener changeListener : linkedList) {
             changeListener.onActivitySateChange(activity, ActivityState.PAUSED);
         }
     }
 
     @Override
     public void onActivityStopped(Activity activity) {
-        for (ActivityChangeListener changeListener : changeListeners) {
+        LinkedList<ActivityChangeListener> linkedList = activityLinked.get(activity);
+        if (linkedList == null) return;
+        for (ActivityChangeListener changeListener : linkedList) {
             changeListener.onActivitySateChange(activity, ActivityState.STOPPED);
         }
     }
@@ -84,14 +103,6 @@ public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks
     @Override
     public void onActivityDestroyed(Activity activity) {
         ActivityStack.removeActivity(activity);
-        Iterator<ActivityChangeListener> iterator = changeListeners.iterator();
-        while (iterator.hasNext()) {
-            ActivityChangeListener changeListener = iterator.next();
-            changeListener.onActivitySateChange(activity, ActivityState.DESTROYED);
-            boolean needRemove = changeListener.onActivityDestroy(activity);
-            if (needRemove) {
-                iterator.remove();
-            }
-        }
+        remove(activity);
     }
 }

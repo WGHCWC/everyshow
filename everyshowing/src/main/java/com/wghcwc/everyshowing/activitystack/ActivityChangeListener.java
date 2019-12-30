@@ -17,7 +17,7 @@ public interface ActivityChangeListener {
      * @param activity 当前Activity
      *
      */
-    boolean onActivityDestroy(Activity activity) ;
+    void onActivityDestroy(Activity activity) ;
 
     /**
      * 当前Activity 创建
