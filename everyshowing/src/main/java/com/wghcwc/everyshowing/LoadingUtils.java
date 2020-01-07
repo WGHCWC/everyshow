@@ -1,46 +1,50 @@
 package com.wghcwc.everyshowing;
 
 import android.app.Activity;
-import android.app.Application;
 
-import com.wghcwc.everyshowing.activitystack.ActivityChangeListener;
-import com.wghcwc.everyshowing.activitystack.ActivityLifecycle;
-import com.wghcwc.everyshowing.activitystack.ActivityStack;
-import com.wghcwc.everyshowing.activitystack.ActivityState;
+import com.wghcwc.activitylifecycle2.ActivityChangeListener;
+import com.wghcwc.activitylifecycle2.ActivityLifecycle;
+import com.wghcwc.activitylifecycle2.ActivityStack;
+import com.wghcwc.activitylifecycle2.ActivityState;
+import com.wghcwc.everyshowing.loadstyle.BaseLoadingStyle;
+import com.wghcwc.everyshowing.loadstyle.LoadingStyle;
 
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.TimeUnit;
-
-import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 
 /**
  * @author wghcwc
  * @date 19-11-26
  */
 public class LoadingUtils {
-    private static volatile LoadingUtils loadingUtils = new LoadingUtils();
-    private static Map<Activity, LoadWrapper> wrapperMap;
-
-    private LoadingUtils() {
-        wrapperMap = new WeakHashMap<>();
+    private static Map<Activity, LoadWrapper> wrapperMap = new WeakHashMap<>();
+    private static LoadingStyle mStyle = new BaseLoadingStyle();
+    public static void setStyle(LoadingStyle style) {
+        mStyle = style;
     }
 
-    public static void init(Application application) {
-        application.registerActivityLifecycleCallbacks(ActivityLifecycle.getInstance());
-    }
-
-    public static SVProgressHUD get() {
-
+    public static LoadingParentView get() {
         LoadWrapper wrapper = getCurrentWrapper();
         if (wrapper != null) {
             return wrapper.getSvProgressHUD();
         }
         return null;
     }
+
+    public static void setCurStyle(LoadingStyle style) {
+        Activity activity = ActivityStack.currentActivity();
+        if (activity == null) {
+            return;
+        }
+        LoadWrapper loadWrapper = wrapperMap.get(activity);
+        if (loadWrapper != null) {
+            loadWrapper.svProgressHUD.dismissImmediately();
+        }
+        loadWrapper = new LoadWrapper(activity, style);
+        wrapperMap.put(activity, loadWrapper);
+
+    }
+
 
     public static void show() {
         LoadWrapper wrapper = getCurrentWrapper();
@@ -51,8 +55,8 @@ public class LoadingUtils {
 
     public static void showWith() {
         showWith("加载中..");
-
     }
+
 
     public static void showWith(String info) {
         LoadWrapper wrapper = getCurrentWrapper();
@@ -68,7 +72,7 @@ public class LoadingUtils {
             wrapper.dismiss();
         }
     }
-
+/*
     public static void delayShow() {
         LoadWrapper wrapper = getCurrentWrapper();
         if (wrapper != null) {
@@ -89,13 +93,14 @@ public class LoadingUtils {
             wrapper.delayDismiss();
         }
     }
+*/
 
     private static LoadWrapper getCurrentWrapper() {
         Activity activity = ActivityStack.currentActivity();
         if (activity == null) {
             return null;
         }
-        return loadingUtils.getLoadingWrapper(activity);
+        return getLoadingWrapper(activity);
     }
 
     private static LoadWrapper getDismissWrapper() {
@@ -107,30 +112,33 @@ public class LoadingUtils {
         if (wrapper == null) {
             return null;
         }
-        return loadingUtils.getLoadingWrapper(activity);
+        return getLoadingWrapper(activity);
     }
 
-    private LoadWrapper getLoadingWrapper(Activity activity) {
+    private static LoadWrapper getLoadingWrapper(Activity activity) {
+        return getLoadingWrapper(activity, mStyle);
+    }
+
+    private static LoadWrapper getLoadingWrapper(Activity activity, LoadingStyle style) {
         LoadWrapper wrapper = wrapperMap.get(activity);
         if (wrapper == null) {
-            wrapper = new LoadWrapper(activity);
+            wrapper = new LoadWrapper(activity, style);
             wrapperMap.put(activity, wrapper);
         }
         return wrapper;
     }
 
-
-    public class LoadWrapper implements ActivityChangeListener {
-        private SVProgressHUD svProgressHUD;
-        private Disposable disposable;
+    public static class LoadWrapper implements ActivityChangeListener {
+        private LoadingParentView svProgressHUD;
+        //        private Disposable disposable;
         private int count;
 
-        private LoadWrapper(Activity activity) {
+        private LoadWrapper(Activity activity, LoadingStyle style) {
             ActivityLifecycle.getInstance().add(activity, this);
-            svProgressHUD = new SVProgressHUD(activity);
+            svProgressHUD = new LoadingParentView(activity, style);
         }
 
-        private SVProgressHUD getSvProgressHUD() {
+        private LoadingParentView getSvProgressHUD() {
             return svProgressHUD;
         }
 
@@ -139,13 +147,12 @@ public class LoadingUtils {
         }
 
         private void dismiss() {
-            if (svProgressHUD.isShowing())
-                svProgressHUD.dismiss();
+            svProgressHUD.dismiss();
         }
-
-        /**
+        /*
+         *//**
          * 0.5秒之内delayDismiss()调用则不显示加载动画,
-         */
+         *//*
         private void delayShow() {
             if (svProgressHUD.isShowing()) {
                 return;
@@ -169,19 +176,21 @@ public class LoadingUtils {
                     });
         }
 
-        /**
+        *//**
          * 多个请求
          *
          * @param times 请求个数
-         */
+         *//*
         private void delayShow(int times) {
             count = times;
             delayShow();
         }
 
+        */
+
         /**
          * 0.5秒之内未显示则取消,已显示则延迟0.5秒消失
-         */
+         *//*
         private void delayDismiss() {
             if (--count > 0) {
                 return;
@@ -206,18 +215,15 @@ public class LoadingUtils {
                             }
                         });
             }
-        }
-
+        }*/
         @Override
         public void onActivityDestroy(Activity activity) {
             wrapperMap.remove(activity);
         }
-
 
         @Override
         public void onActivitySateChange(Activity activity, ActivityState state) {
 
         }
     }
-
 }

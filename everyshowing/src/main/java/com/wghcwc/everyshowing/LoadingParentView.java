@@ -14,48 +14,48 @@ import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 
 import com.wghcwc.everyshowing.listener.OnDismissListener;
+import com.wghcwc.everyshowing.loadstyle.BaseLoadingStyle;
+import com.wghcwc.everyshowing.loadstyle.LoadingStyle;
+import com.wghcwc.everyshowing.loadstyle.LoadingMaskType;
 import com.wghcwc.everyshowing.view.SVCircleProgressBar;
-import com.wghcwc.everyshowing.view.SVProgressDefaultView;
+import com.wghcwc.everyshowing.view.LoadingDefaultView;
 
 import java.lang.ref.WeakReference;
 
+
 /**
- * Created by Sai on 15/8/15.
+ * @author wghcwc
  */
-public class SVProgressHUD {
+public class LoadingParentView {
     private WeakReference<Context> contextWeak;
     private static final long DISMISSDELAYED = 1000;
-    private SVProgressHUDMaskType mSVProgressHUDMaskType;
     private boolean isShowing;
     private boolean isDismissing;
+    private LoadingStyle style;
 
-    public enum SVProgressHUDMaskType {
-        None,  // 允许遮罩下面控件点击
-        Clear,     // 不允许遮罩下面控件点击
-        Black,     // 不允许遮罩下面控件点击，背景黑色半透明
-        Gradient,   // 不允许遮罩下面控件点击，背景渐变半透明
-        ClearCancel,     // 不允许遮罩下面控件点击，点击遮罩消失
-        BlackCancel,     // 不允许遮罩下面控件点击，背景黑色半透明，点击遮罩消失
-        GradientCancel   // 不允许遮罩下面控件点击，背景渐变半透明，点击遮罩消失
-        ;
-    }
 
     private final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM
     );
-    private ViewGroup decorView;//activity的根View
-    private ViewGroup rootView;// mSharedView 的 根View
-    private SVProgressDefaultView mSharedView;
+    private ViewGroup rootView;
+    private LoadingDefaultView mSharedView;
+    private ViewGroup decorView;
 
     private Animation outAnim;
     private Animation inAnim;
-    private int gravity = Gravity.CENTER;
+    private int gravity;
     private OnDismissListener onDismissListener;
 
 
-    public SVProgressHUD(Context context) {
+    public LoadingParentView(Context context) {
+        this(context, new BaseLoadingStyle());
+    }
+
+
+    public LoadingParentView(Context context, LoadingStyle style) {
         this.contextWeak = new WeakReference<>(context);
-        gravity = Gravity.CENTER;
+        gravity = style.getGravity();
+        this.style = style;
         initViews();
         initDefaultView();
         initAnimation();
@@ -66,7 +66,7 @@ public class SVProgressHUD {
         if (context == null) return;
 
         LayoutInflater layoutInflater = LayoutInflater.from(context);
-        decorView =  ((Activity) context).getWindow().getDecorView().findViewById(android.R.id.content);
+        decorView = ((Activity) context).getWindow().getDecorView().findViewById(android.R.id.content);
         rootView = (ViewGroup) layoutInflater.inflate(R.layout.layout_svprogresshud, null, false);
         rootView.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
@@ -76,8 +76,7 @@ public class SVProgressHUD {
     protected void initDefaultView() {
         Context context = contextWeak.get();
         if (context == null) return;
-
-        mSharedView = new SVProgressDefaultView(context);
+        mSharedView = new LoadingDefaultView(context, style);
         params.gravity = gravity;
         mSharedView.setLayoutParams(params);
     }
@@ -112,12 +111,12 @@ public class SVProgressHUD {
 
     public void show() {
         if (isShowing()) return;
-        setMaskType(SVProgressHUDMaskType.Black);
+        setMaskType(style.getMaskType());
         mSharedView.show();
         svShow();
     }
 
-    public void showWithMaskType(SVProgressHUDMaskType maskType) {
+    public void showWithMaskType(LoadingMaskType maskType) {
         if (isShowing()) return;
         //判断maskType
         setMaskType(maskType);
@@ -127,12 +126,12 @@ public class SVProgressHUD {
 
     public void showWithStatus(String string) {
         if (isShowing()) return;
-        setMaskType(SVProgressHUDMaskType.Black);
+        setMaskType(style.getMaskType());
         mSharedView.showWithStatus(string);
         svShow();
     }
 
-    public void showWithStatus(String string, SVProgressHUDMaskType maskType) {
+    public void showWithStatus(String string, LoadingMaskType maskType) {
         if (isShowing()) return;
         setMaskType(maskType);
         mSharedView.showWithStatus(string);
@@ -141,13 +140,13 @@ public class SVProgressHUD {
 
     public void showInfoWithStatus(String string) {
         if (isShowing()) return;
-        setMaskType(SVProgressHUDMaskType.Black);
+        setMaskType(style.getMaskType());
         mSharedView.showInfoWithStatus(string);
         svShow();
         scheduleDismiss();
     }
 
-    public void showInfoWithStatus(String string, SVProgressHUDMaskType maskType) {
+    public void showInfoWithStatus(String string, LoadingMaskType maskType) {
         if (isShowing()) return;
         setMaskType(maskType);
         mSharedView.showInfoWithStatus(string);
@@ -157,13 +156,13 @@ public class SVProgressHUD {
 
     public void showSuccessWithStatus(String string) {
         if (isShowing()) return;
-        setMaskType(SVProgressHUDMaskType.Black);
+        setMaskType(style.getMaskType());
         mSharedView.showSuccessWithStatus(string);
         svShow();
         scheduleDismiss();
     }
 
-    public void showSuccessWithStatus(String string, SVProgressHUDMaskType maskType) {
+    public void showSuccessWithStatus(String string, LoadingMaskType maskType) {
         if (isShowing()) return;
         setMaskType(maskType);
         mSharedView.showSuccessWithStatus(string);
@@ -173,13 +172,13 @@ public class SVProgressHUD {
 
     public void showErrorWithStatus(String string) {
         if (isShowing()) return;
-        setMaskType(SVProgressHUDMaskType.Black);
+        setMaskType(style.getMaskType());
         mSharedView.showErrorWithStatus(string);
         svShow();
         scheduleDismiss();
     }
 
-    public void showErrorWithStatus(String string, SVProgressHUDMaskType maskType) {
+    public void showErrorWithStatus(String string, LoadingMaskType maskType) {
         if (isShowing()) return;
         setMaskType(maskType);
         mSharedView.showErrorWithStatus(string);
@@ -187,7 +186,7 @@ public class SVProgressHUD {
         scheduleDismiss();
     }
 
-    public void showWithProgress(String string, SVProgressHUDMaskType maskType) {
+    public void showWithProgress(String string, LoadingMaskType maskType) {
         if (isShowing()) return;
         setMaskType(maskType);
         mSharedView.showWithProgress(string);
@@ -202,9 +201,8 @@ public class SVProgressHUD {
         mSharedView.setText(string);
     }
 
-    private void setMaskType(SVProgressHUDMaskType maskType) {
-        mSVProgressHUDMaskType = maskType;
-        switch (mSVProgressHUDMaskType) {
+    private void setMaskType(LoadingMaskType maskType) {
+        switch (maskType) {
             case None:
                 configMaskType(android.R.color.transparent, false, false);
                 break;
@@ -271,7 +269,7 @@ public class SVProgressHUD {
         Context context = contextWeak.get();
         if (context == null) return null;
 
-        int res = SVProgressHUDAnimateUtil.getAnimationResource(this.gravity, true);
+        int res = LoadingAnimateUtil.getAnimationResource(this.gravity, true);
         return AnimationUtils.loadAnimation(context, res);
     }
 
@@ -279,7 +277,7 @@ public class SVProgressHUD {
         Context context = contextWeak.get();
         if (context == null) return null;
 
-        int res = SVProgressHUDAnimateUtil.getAnimationResource(this.gravity, false);
+        int res = LoadingAnimateUtil.getAnimationResource(this.gravity, false);
         return AnimationUtils.loadAnimation(context, res);
     }
 
@@ -296,11 +294,12 @@ public class SVProgressHUD {
     private Handler mHandler = new InnerHandler(this);
 
     private static class InnerHandler extends Handler {
-        private WeakReference<SVProgressHUD> mWeakReference;
+        private WeakReference<LoadingParentView> mWeakReference;
 
-        private InnerHandler(SVProgressHUD svProgressHUD) {
+        private InnerHandler(LoadingParentView svProgressHUD) {
             mWeakReference = new WeakReference<>(svProgressHUD);
         }
+
         @Override
         public void handleMessage(Message msg) {
             mWeakReference.get().dismiss();
@@ -313,9 +312,6 @@ public class SVProgressHUD {
         mHandler.sendEmptyMessageDelayed(0, DISMISSDELAYED);
     }
 
-    /**
-     * Called when the user touch on black overlay in order to dismiss the dialog
-     */
     private final View.OnTouchListener onCancelableTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {

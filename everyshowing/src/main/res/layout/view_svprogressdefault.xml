@@ -7,6 +7,7 @@
     android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/background"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_svprogresshuddefault"
@@ -33,10 +34,10 @@
             android:id="@+id/circleProgressBar"
             android:layout_width="@dimen/size_image_smallloading"
             android:layout_height="@dimen/size_image_smallloading"
+            android:visibility="gone"
             app:svprogress_roundColor="@color/roundColor_svprogresshuddefault"
             app:svprogress_roundProgressColor="@color/roundProgressColor_svprogresshuddefault"
-            app:svprogress_roundWidth="2dip"
-            android:visibility="gone" />
+            app:svprogress_roundWidth="2dip" />
 
         <TextView
             android:id="@+id/tvMsg"

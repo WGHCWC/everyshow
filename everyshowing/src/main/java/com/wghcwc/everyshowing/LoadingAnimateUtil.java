@@ -2,10 +2,11 @@ package com.wghcwc.everyshowing;
 
 import android.view.Gravity;
 
+
 /**
- * Created by Sai on 15/8/16.
+ * @author wghcwc
  */
-public class SVProgressHUDAnimateUtil {
+public class LoadingAnimateUtil {
     private static final int INVALID = -1;
     static int getAnimationResource(int gravity, boolean isInAnimation) {
         switch (gravity) {

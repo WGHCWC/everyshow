@@ -3,63 +3,57 @@ package com.wghcwc.everyshowing.view;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.wghcwc.everyshowing.R;
+import com.wghcwc.everyshowing.loadstyle.BaseLoadingStyle;
+import com.wghcwc.everyshowing.loadstyle.LoadingStyle;
 
 
 /**
- * Created by Sai on 15/8/15.
- * 默认的SVProgress效果
+ * @author wghcwc
+ * @date 20-1-5
  */
-public class SVProgressDefaultView extends LinearLayout {
-    private int resBigLoading = R.drawable.ic_svstatus_loading;
-    private int resInfo = R.drawable.ic_svstatus_info;
-    private int resSuccess = R.drawable.ic_svstatus_success;
-    private int resError = R.drawable.ic_svstatus_error;
+public class LoadingDefaultView extends LinearLayout {
     private ImageView ivBigLoading, ivSmallLoading;
     private SVCircleProgressBar circleProgressBar;
     private TextView tvMsg;
+    private LoadingStyle mStyle;
+    private LinearLayout background;
 
-    private RotateAnimation mRotateAnimation;
-
-    public SVProgressDefaultView(Context context) {
+    public LoadingDefaultView(Context context, LoadingStyle style) {
         super(context);
+        this.mStyle = style;
         initViews();
-        init();
     }
+
+    public LoadingDefaultView(Context context) {
+        this(context, new BaseLoadingStyle());
+    }
+
 
     private void initViews() {
         LayoutInflater.from(getContext()).inflate(R.layout.view_svprogressdefault, this, true);
-        ivBigLoading =  findViewById(R.id.ivBigLoading);
-        ivSmallLoading =findViewById(R.id.ivSmallLoading);
-        circleProgressBar =  findViewById(R.id.circleProgressBar);
+        background = findViewById(R.id.background);
+        background.setBackgroundResource(mStyle.getBackground());
+        ivBigLoading = findViewById(R.id.ivBigLoading);
+        ivBigLoading.setScaleType(mStyle.getScaleType());
+        ivBigLoading.setPadding(mStyle.getPadding(), mStyle.getPadding(), mStyle.getPadding(), mStyle.getPadding());
+        ivSmallLoading = findViewById(R.id.ivSmallLoading);
+        circleProgressBar = findViewById(R.id.circleProgressBar);
         tvMsg = findViewById(R.id.tvMsg);
-    }
-
-    private void init() {
-        mRotateAnimation = new RotateAnimation(0f, 359f,
-                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        mRotateAnimation.setDuration(1000L);
-        mRotateAnimation.setInterpolator(new LinearInterpolator());
-        mRotateAnimation.setRepeatCount(-1);
-        mRotateAnimation.setRepeatMode(Animation.RESTART);
     }
 
     public void show() {
         clearAnimations();
-        ivBigLoading.setImageResource(resBigLoading);
+        ivBigLoading.setImageResource(mStyle.getImage());
         ivBigLoading.setVisibility(View.VISIBLE);
         ivSmallLoading.setVisibility(View.GONE);
         circleProgressBar.setVisibility(View.GONE);
         tvMsg.setVisibility(View.GONE);
-        //开启旋转动画
-        ivBigLoading.startAnimation(mRotateAnimation);
+        ivBigLoading.startAnimation(mStyle.getAnimation());
     }
 
     public void showWithStatus(String string) {
@@ -67,22 +61,22 @@ public class SVProgressDefaultView extends LinearLayout {
             show();
             return;
         }
-        showBaseStatus(resBigLoading, string);
-        //开启旋转动画
-        ivSmallLoading.startAnimation(mRotateAnimation);
+        showBaseStatus(mStyle.getImage(), string);
+        ivSmallLoading.startAnimation(mStyle.getAnimation());
     }
 
     public void showInfoWithStatus(String string) {
-        showBaseStatus(resInfo, string);
+        showBaseStatus(mStyle.infoImage(), string);
     }
 
     public void showSuccessWithStatus(String string) {
-        showBaseStatus(resSuccess, string);
+        showBaseStatus(mStyle.successImage(), string);
     }
 
     public void showErrorWithStatus(String string) {
-        showBaseStatus(resError, string);
+        showBaseStatus(mStyle.errorImage(), string);
     }
+
     public void showWithProgress(String string) {
         showProgress(string);
     }
@@ -91,7 +85,7 @@ public class SVProgressDefaultView extends LinearLayout {
         return circleProgressBar;
     }
 
-    public void setText(String string){
+    public void setText(String string) {
         tvMsg.setText(string);
     }
 
