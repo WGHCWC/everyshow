@@ -11,12 +11,12 @@ import com.wghcwc.activitylifecycle2.ActivityLifecycle;
 public class ScreenUtils {
 
     public static int dp2px(float dpValue) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpValue, ActivityLifecycle.app.getResources().getDisplayMetrics());
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpValue, ActivityLifecycle.getApp().getResources().getDisplayMetrics());
     }
     /**
      * sp转px
      */
     public static int sp2px(float spValue) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, spValue, ActivityLifecycle.app.getResources().getDisplayMetrics());
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, spValue, ActivityLifecycle.getApp().getResources().getDisplayMetrics());
     }
 }

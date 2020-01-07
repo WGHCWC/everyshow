@@ -12,7 +12,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         ActivityLifecycle.init(this);
-//        LoadingUtils.setStyle(new MyLoadingStyle());
+//        LoadingHelper.setStyle(new MyLoadingStyle());
     }
 
 

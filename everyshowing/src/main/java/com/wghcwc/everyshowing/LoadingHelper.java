@@ -13,12 +13,29 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
+ * 使用前需要依赖
+ * <p>
+ * allprojects {
+ * repositories {
+ * ....
+ * maven { url 'https://jitpack.io' }
+ * }
+ * }
+ * implementation 'com.github.WGHCWC:activitylifecycle:1.0.4'
+ * </P>
+ * {@link ActivityLifecycle}
+ * 在 application 中初始化ActivityLifecycle.init(this);
+ *
  * @author wghcwc
  * @date 19-11-26
  */
-public class LoadingUtils {
+public class LoadingHelper {
     private static Map<Activity, LoadWrapper> wrapperMap = new WeakHashMap<>();
     private static LoadingStyle mStyle = new BaseLoadingStyle();
+
+    /**
+     * 设置全局样式
+     */
     public static void setStyle(LoadingStyle style) {
         mStyle = style;
     }
@@ -26,11 +43,14 @@ public class LoadingUtils {
     public static LoadingParentView get() {
         LoadWrapper wrapper = getCurrentWrapper();
         if (wrapper != null) {
-            return wrapper.getSvProgressHUD();
+            return wrapper.loadingParent;
         }
         return null;
     }
 
+    /**
+     * 设置当前activity加载样式,仅当前LoadWrapper有效
+     */
     public static void setCurStyle(LoadingStyle style) {
         Activity activity = ActivityStack.currentActivity();
         if (activity == null) {
@@ -38,7 +58,7 @@ public class LoadingUtils {
         }
         LoadWrapper loadWrapper = wrapperMap.get(activity);
         if (loadWrapper != null) {
-            loadWrapper.svProgressHUD.dismissImmediately();
+            loadWrapper.loadingParent.dismissImmediately();
         }
         loadWrapper = new LoadWrapper(activity, style);
         wrapperMap.put(activity, loadWrapper);
@@ -49,7 +69,7 @@ public class LoadingUtils {
     public static void show() {
         LoadWrapper wrapper = getCurrentWrapper();
         if (wrapper != null) {
-            wrapper.show();
+            wrapper.loadingParent.show();
         }
     }
 
@@ -61,15 +81,14 @@ public class LoadingUtils {
     public static void showWith(String info) {
         LoadWrapper wrapper = getCurrentWrapper();
         if (wrapper != null) {
-            wrapper.getSvProgressHUD().showWithStatus(info);
+            wrapper.loadingParent.showWithStatus(info);
         }
     }
 
     public static void dismiss() {
         LoadWrapper wrapper = getDismissWrapper();
-
         if (wrapper != null) {
-            wrapper.dismiss();
+            wrapper.loadingParent.dismiss();
         }
     }
 /*
@@ -103,6 +122,9 @@ public class LoadingUtils {
         return getLoadingWrapper(activity);
     }
 
+    /**
+     * 无LoadWrapper,则不创建并返回
+     */
     private static LoadWrapper getDismissWrapper() {
         Activity activity = ActivityStack.currentActivity();
         if (activity == null) {
@@ -128,33 +150,29 @@ public class LoadingUtils {
         return wrapper;
     }
 
+    /**
+     * 监听activity 改变,自动创建释放对应LoadingParentView
+     */
     public static class LoadWrapper implements ActivityChangeListener {
-        private LoadingParentView svProgressHUD;
+        private LoadingParentView loadingParent;
         //        private Disposable disposable;
-        private int count;
+        //        private int count;
 
         private LoadWrapper(Activity activity, LoadingStyle style) {
             ActivityLifecycle.getInstance().add(activity, this);
-            svProgressHUD = new LoadingParentView(activity, style);
+            loadingParent = new LoadingParentView(activity, style);
         }
 
-        private LoadingParentView getSvProgressHUD() {
-            return svProgressHUD;
+        public LoadingParentView getLoadingParent() {
+            return loadingParent;
         }
 
-        private void show() {
-            svProgressHUD.show();
-        }
-
-        private void dismiss() {
-            svProgressHUD.dismiss();
-        }
         /*
          *//**
          * 0.5秒之内delayDismiss()调用则不显示加载动画,
          *//*
         private void delayShow() {
-            if (svProgressHUD.isShowing()) {
+            if (loadingParent.isShowing()) {
                 return;
             }
             Observable.timer(500, TimeUnit.MILLISECONDS)
@@ -169,7 +187,7 @@ public class LoadingUtils {
 
                         @Override
                         protected void onSuccess(Long aLong) {
-                            svProgressHUD.showWithStatus("加载中...");
+                            loadingParent.showWithStatus("加载中...");
                         }
 
 
@@ -198,7 +216,7 @@ public class LoadingUtils {
             if (disposable != null && !disposable.isDisposed()) {
                 disposable.dispose();
             }
-            if (svProgressHUD.isShowing()) {
+            if (loadingParent.isShowing()) {
                 Observable.timer(500, TimeUnit.MILLISECONDS)
                         .subscribeOn(Schedulers.io())
                         .unsubscribeOn(AndroidSchedulers.mainThread())
@@ -206,16 +224,20 @@ public class LoadingUtils {
                         .subscribe(new MyObserver<Long>() {
                             @Override
                             protected void onSuccess(Long aLong) {
-                                svProgressHUD.dismiss();
+                                loadingParent.dismiss();
                             }
 
                             @Override
                             public void onError(Throwable e) {
-                                svProgressHUD.dismiss();
+                                loadingParent.dismiss();
                             }
                         });
             }
         }*/
+
+        /**
+         * 不能在此移除监听,会导致迭代异常
+         */
         @Override
         public void onActivityDestroy(Activity activity) {
             wrapperMap.remove(activity);
