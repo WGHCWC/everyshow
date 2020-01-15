@@ -3,7 +3,9 @@ package com.wghcwc.everyshowing;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -26,7 +28,7 @@ import java.lang.ref.WeakReference;
 /**
  * @author wghcwc
  */
-public class LoadingParentView {
+public class LoadingController {
     private WeakReference<Context> contextWeak;
     private static final long DISMISSDELAYED = 1000;
     private boolean isShowing;
@@ -47,12 +49,12 @@ public class LoadingParentView {
     private OnDismissListener onDismissListener;
 
 
-    public LoadingParentView(Context context) {
+    public LoadingController(Context context) {
         this(context, new BaseLoadingStyle());
     }
 
 
-    public LoadingParentView(Context context, LoadingStyle style) {
+    public LoadingController(Context context, LoadingStyle style) {
         this.contextWeak = new WeakReference<>(context);
         gravity = style.getGravity();
         this.style = style;
@@ -64,7 +66,6 @@ public class LoadingParentView {
     protected void initViews() {
         Context context = contextWeak.get();
         if (context == null) return;
-
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         decorView = ((Activity) context).getWindow().getDecorView().findViewById(android.R.id.content);
         rootView = (ViewGroup) layoutInflater.inflate(R.layout.layout_svprogresshud, null, false);
@@ -260,9 +261,8 @@ public class LoadingParentView {
         isShowing = false;
         isDismissing = false;
         if (onDismissListener != null) {
-            onDismissListener.onDismiss(this);
+            onDismissListener.onDismiss(mSharedView);
         }
-
     }
 
     public Animation getInAnimation() {
@@ -276,7 +276,6 @@ public class LoadingParentView {
     public Animation getOutAnimation() {
         Context context = contextWeak.get();
         if (context == null) return null;
-
         int res = LoadingAnimateUtil.getAnimationResource(this.gravity, false);
         return AnimationUtils.loadAnimation(context, res);
     }
@@ -294,22 +293,32 @@ public class LoadingParentView {
     private Handler mHandler = new InnerHandler(this);
 
     private static class InnerHandler extends Handler {
-        private WeakReference<LoadingParentView> mWeakReference;
+        private WeakReference<LoadingController> mWeakReference;
 
-        private InnerHandler(LoadingParentView svProgressHUD) {
-            mWeakReference = new WeakReference<>(svProgressHUD);
+        private InnerHandler(LoadingController loadingController) {
+            super(Looper.getMainLooper());
+            mWeakReference = new WeakReference<>(loadingController);
         }
 
         @Override
         public void handleMessage(Message msg) {
-            mWeakReference.get().dismiss();
-        }
-    }
+            switch (msg.what) {
+                case DISMISS:
+                    mWeakReference.get().dismiss();
+                    break;
+                case DISMISS_IMMEDIATELY:
+                    mWeakReference.get().dismissImmediately();
+                    break;
+                default:
+            }
 
+        }
+
+    }
 
     private void scheduleDismiss() {
         mHandler.removeCallbacksAndMessages(null);
-        mHandler.sendEmptyMessageDelayed(0, DISMISSDELAYED);
+        mHandler.sendEmptyMessageDelayed(DISMISS, DISMISSDELAYED);
     }
 
     private final View.OnTouchListener onCancelableTouchListener = new View.OnTouchListener() {
@@ -323,6 +332,8 @@ public class LoadingParentView {
         }
     };
 
+    private static final int DISMISS_IMMEDIATELY = 1;
+    private static final int DISMISS = 0;
     private Animation.AnimationListener outAnimListener = new Animation.AnimationListener() {
         @Override
         public void onAnimationStart(Animation animation) {
@@ -331,7 +342,12 @@ public class LoadingParentView {
 
         @Override
         public void onAnimationEnd(Animation animation) {
-            dismissImmediately();
+            mSharedView.post(new Runnable() {
+                @Override
+                public void run() {
+                    dismissImmediately();
+                }
+            });
         }
 
         @Override

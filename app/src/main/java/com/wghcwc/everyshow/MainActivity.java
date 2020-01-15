@@ -1,13 +1,11 @@
 package com.wghcwc.everyshow;
 
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.wghcwc.everyshowing.LoadingHelper;
 
 /**
  * @author wghcwc
@@ -19,8 +17,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notice);
-        LoadingHelper.showWith();
-        startActivity(new Intent(this, TestActivity.class));
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+    }
 }

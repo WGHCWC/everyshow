@@ -40,7 +40,7 @@ public class LoadingHelper {
         mStyle = style;
     }
 
-    public static LoadingParentView get() {
+    public static LoadingController get() {
         LoadWrapper wrapper = getCurrentWrapper();
         if (wrapper != null) {
             return wrapper.loadingParent;
@@ -62,25 +62,48 @@ public class LoadingHelper {
         }
         loadWrapper = new LoadWrapper(activity, style);
         wrapperMap.put(activity, loadWrapper);
-
     }
 
 
     public static void show() {
+        show(false);
+    }
+
+    /**
+     * 是否强行显示新的加载动画
+     *
+     * @param force true
+     *              false
+     */
+    public static void show(boolean force) {
         LoadWrapper wrapper = getCurrentWrapper();
         if (wrapper != null) {
+            if (force) {
+                wrapper.loadingParent.dismissImmediately();
+            }
             wrapper.loadingParent.show();
+
         }
     }
 
     public static void showWith() {
-        showWith("加载中..");
+        showWith("加载中..", false);
     }
 
+    public static void showWith(boolean force) {
+        showWith("加载中..", force);
+    }
 
     public static void showWith(String info) {
+        showWith(info, false);
+    }
+
+    public static void showWith(String info, boolean force) {
         LoadWrapper wrapper = getCurrentWrapper();
         if (wrapper != null) {
+            if (force) {
+                wrapper.loadingParent.dismissImmediately();
+            }
             wrapper.loadingParent.showWithStatus(info);
         }
     }
@@ -88,31 +111,20 @@ public class LoadingHelper {
     public static void dismiss() {
         LoadWrapper wrapper = getDismissWrapper();
         if (wrapper != null) {
-            wrapper.loadingParent.dismiss();
-        }
-    }
-/*
-    public static void delayShow() {
-        LoadWrapper wrapper = getCurrentWrapper();
-        if (wrapper != null) {
-            wrapper.delayShow();
+            try {
+                wrapper.loadingParent.dismiss();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public static void delayShow(int times) {
-        LoadWrapper wrapper = getCurrentWrapper();
-        if (wrapper != null) {
-            wrapper.delayShow(times);
-        }
-    }
-
-    public static void delayDismiss() {
+    public static void dismissImmediately() {
         LoadWrapper wrapper = getDismissWrapper();
         if (wrapper != null) {
-            wrapper.delayDismiss();
+            wrapper.loadingParent.dismissImmediately();
         }
     }
-*/
 
     private static LoadWrapper getCurrentWrapper() {
         Activity activity = ActivityStack.currentActivity();
@@ -154,86 +166,16 @@ public class LoadingHelper {
      * 监听activity 改变,自动创建释放对应LoadingParentView
      */
     public static class LoadWrapper implements ActivityChangeListener {
-        private LoadingParentView loadingParent;
-        //        private Disposable disposable;
-        //        private int count;
+        private LoadingController loadingParent;
 
         private LoadWrapper(Activity activity, LoadingStyle style) {
             ActivityLifecycle.getInstance().add(activity, this);
-            loadingParent = new LoadingParentView(activity, style);
+            loadingParent = new LoadingController(activity, style);
         }
 
-        public LoadingParentView getLoadingParent() {
+        public LoadingController getLoadingParent() {
             return loadingParent;
         }
-
-        /*
-         *//**
-         * 0.5秒之内delayDismiss()调用则不显示加载动画,
-         *//*
-        private void delayShow() {
-            if (loadingParent.isShowing()) {
-                return;
-            }
-            Observable.timer(500, TimeUnit.MILLISECONDS)
-                    .subscribeOn(Schedulers.io())
-                    .unsubscribeOn(AndroidSchedulers.mainThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new MyObserver<Long>() {
-                        @Override
-                        public void onSubscribe(Disposable d) {
-                            disposable = d;
-                        }
-
-                        @Override
-                        protected void onSuccess(Long aLong) {
-                            loadingParent.showWithStatus("加载中...");
-                        }
-
-
-                    });
-        }
-
-        *//**
-         * 多个请求
-         *
-         * @param times 请求个数
-         *//*
-        private void delayShow(int times) {
-            count = times;
-            delayShow();
-        }
-
-        */
-
-        /**
-         * 0.5秒之内未显示则取消,已显示则延迟0.5秒消失
-         *//*
-        private void delayDismiss() {
-            if (--count > 0) {
-                return;
-            }
-            if (disposable != null && !disposable.isDisposed()) {
-                disposable.dispose();
-            }
-            if (loadingParent.isShowing()) {
-                Observable.timer(500, TimeUnit.MILLISECONDS)
-                        .subscribeOn(Schedulers.io())
-                        .unsubscribeOn(AndroidSchedulers.mainThread())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new MyObserver<Long>() {
-                            @Override
-                            protected void onSuccess(Long aLong) {
-                                loadingParent.dismiss();
-                            }
-
-                            @Override
-                            public void onError(Throwable e) {
-                                loadingParent.dismiss();
-                            }
-                        });
-            }
-        }*/
 
         /**
          * 不能在此移除监听,会导致迭代异常
