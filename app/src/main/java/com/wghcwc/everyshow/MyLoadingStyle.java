@@ -20,6 +20,6 @@ public class MyLoadingStyle extends BaseLoadingStyle {
 
     @Override
     public LoadingMaskType getMaskType() {
-        return LoadingMaskType.None;
+        return LoadingMaskType.ClearCancel;
     }
 }

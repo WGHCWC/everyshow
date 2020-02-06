@@ -2,10 +2,13 @@ package com.wghcwc.everyshow;
 
 
 import android.os.Bundle;
-import android.os.Handler;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.wghcwc.everyshowing.LoadingHelper;
 
 /**
  * @author wghcwc
@@ -17,9 +20,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notice);
+        findViewById(R.id.tvClick).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "ssss", Toast.LENGTH_SHORT).show();
+            }
+        });
+        LoadingHelper.showWith();
     }
 
-    @Override
+  /*  @Override
     protected void onResume() {
         super.onResume();
     }
@@ -27,5 +37,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-    }
+        LoadingHelper.dismiss();
+    }*/
 }

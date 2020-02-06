@@ -1,88 +1,85 @@
-package com.wghcwc.everyshowing.loadstyle;
+package com.wghcwc.everyshowing.loadstyle
 
-import android.view.animation.Animation;
-import android.widget.ImageView;
+import android.view.animation.Animation
+import android.widget.ImageView
 
 /**
  * @author wghcwc
  * @date 20-1-5
  */
-public interface LoadingStyle {
+interface LoadingStyle {
+
     /**
      * 加载图片
      *
      * @return 加载需要图片
      */
-    int getImage();
+    val image: Int
 
     /**
      * 加载背景
      *
      * @return 加载背景
      */
-    int getBackground();
+    val background: Int
 
     /**
      * 加载位置
      *
      * @return 加载位置
      */
-    int getGravity();
+    val gravity: Int
 
-    int marginLeft();
-
-    int marginRight();
-
-    int marginTop();
-
-    int marginBottom();
-
+    val marginLeft: Int get() = 0
+    val marginRight: Int get() = 0
+    val marginTop: Int get() = 0
+    val marginBottom: Int get() = 0
     /**
      * 加载padding
      *
      * @return 加载padding
      */
-    int getPadding();
+    val padding: Int get() = 0
 
     /**
      * 提示图片
      *
      * @return 提示图片
      */
-    int infoImage();
+    val infoImage: Int
 
     /**
      * 成功图片
      *
      * @return 成功图片
      */
-    int successImage();
+    val successImage: Int
 
     /**
      * 失败图片
      *
      * @return 失败图片
      */
-    int errorImage();
+    val errorImage: Int
 
     /**
      * 遮罩
      *
      * @return 遮罩
      */
-    LoadingMaskType getMaskType();
+    val maskType: LoadingMaskType
 
     /**
      * 动画
      *
      * @return 动画
      */
-    Animation getAnimation();
+    val animation: Animation
 
     /**
      * 设置图片ScaleType
      *
      * @return 图片ScaleType
      */
-    ImageView.ScaleType getScaleType();
+    val scaleType: ImageView.ScaleType
 }
