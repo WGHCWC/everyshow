@@ -8,7 +8,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.wghcwc.everyshowing.LoadingHelper;
 
 /**
  * @author wghcwc
@@ -26,17 +25,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "ssss", Toast.LENGTH_SHORT).show();
             }
         });
-        LoadingHelper.showWith();
+//        LoadingHelper.show();
     }
 
-  /*  @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        LoadingHelper.dismiss();
-    }*/
 }

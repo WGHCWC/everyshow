@@ -11,6 +11,7 @@ import java.util.*
  * @date 19-12-5
  */
 object ActivityLifecycle : ActivityLifecycleCallbacks {
+
     private val activityLinked = WeakHashMap<Activity, LinkedList<ActivityChangeListener>>()
     private lateinit var app: Application
     private var init = false

@@ -149,6 +149,6 @@ object LoadingHelper {
             loadingParent = LoadingController(activity, style)
         }
 
-
     }
+
 }
